@@ -5,26 +5,28 @@ export interface inputProps {
   type: string;
   placeholder?: string;
   value?: string;
+  disabled?: boolean;
 }
 
 export interface formProps {
   children: ReactNode;
-  action: (formData: FormData) => void;
+  action: (formData: FormData) => Promise<void>;
   className?: string;
   onSubmit?: () => void;
 }
 
 export interface buttonProps {
   type?: "button" | "submit" | "reset";
-  text: string | ReactNode;
+  children: ReactNode;  // Replaced 'text' with standard 'children'
   onClick?: () => void;
-  actionButton?: boolean;
-  bgColor?: string;
+  disabled?: boolean;
+  ariaLabel?: string;
+  className?: string;
 }
 
 export interface todoProps {
   id: string;
   title?: string | null;
   isCompleted: boolean;
-  createdAt?: Date;
+  createdAt?: Date | string;
 }

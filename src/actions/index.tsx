@@ -5,65 +5,84 @@ import { revalidatePath } from "next/cache";
 
 export async function createTodo(formData: FormData) {
   const input = formData.get("input") as string;
-  if (!input.trim()) {
-    return;
+  if (!input?.trim()) {
+    throw new Error("Input cannot be empty");
   }
 
-  await prisma.todo.create({
-    data: {
-      title: input,
-    },
-  });
-
-  revalidatePath("/");
+  try {
+    await prisma.todo.create({
+      data: {
+        title: input,
+      },
+    });
+    revalidatePath("/");
+  } catch (error) {
+    throw new Error("Failed to create todo");
+  }
 }
 
 export async function changeStatus(formData: FormData) {
   const inputId = formData.get("inputId") as string;
-  const todo = await prisma.todo.findUnique({
-    where: {
-      id: inputId,
-    },
-  });
+  
+  try {
+    const todo = await prisma.todo.findUnique({
+      where: {
+        id: inputId,
+      },
+    });
 
-  const updateStatus = !todo?.isCompleted;
+    if (!todo) {
+      throw new Error("Todo not found");
+    }
 
-  await prisma.todo.update({
-    where: {
-      id: inputId,
-    },
-    data: {
-      isCompleted: updateStatus,
-    },
-  });
-
-  revalidatePath("/");
+    await prisma.todo.update({
+      where: {
+        id: inputId,
+      },
+      data: {
+        isCompleted: !todo.isCompleted,
+      },
+    });
+    revalidatePath("/");
+  } catch (error) {
+    throw new Error("Failed to update status");
+  }
 }
 
 export async function editTodo(formData: FormData) {
   const newTitle = formData.get("newTitle") as string;
   const inputId = formData.get("inputId") as string;
 
-  await prisma.todo.update({
-    where: {
-      id: inputId,
-    },
-    data: {
-      title: newTitle,
-    },
-  });
+  if (!newTitle?.trim()) {
+    throw new Error("Title cannot be empty");
+  }
 
-  revalidatePath("/");
+  try {
+    await prisma.todo.update({
+      where: {
+        id: inputId,
+      },
+      data: {
+        title: newTitle,
+      },
+    });
+    revalidatePath("/");
+  } catch (error) {
+    throw new Error("Failed to edit todo");
+  }
 }
 
 export async function deleteTodo(formData: FormData) {
   const inputId = formData.get("inputId") as string;
 
-  await prisma.todo.delete({
-    where: {
-      id: inputId,
-    },
-  });
-
-  revalidatePath("/");
+  try {
+    await prisma.todo.delete({
+      where: {
+        id: inputId,
+      },
+    });
+    revalidatePath("/");
+  } catch (error) {
+    throw new Error("Todo not found or already deleted");
+  }
 }
